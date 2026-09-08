@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h3 class="fw-bold m-0">🗓️ Calendario de Ventas</h3>
+        <p class="text-muted small m-0">Historial y totales acumulados en el tiempo</p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        <a href="/calendario?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-secondary btn-sm fw-bold">◀ Anterior</a>
+        <span class="fw-bold fs-5 px-2">{{ nombre_mes }} {{ year }}</span>
+        <a href="/calendario?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-secondary btn-sm fw-bold">Siguiente ▶</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-12">
+        <div class="card p-3 shadow-sm border-start border-4 border-success">
+            <span class="text-muted small fw-bold">TOTAL VENDIDO EN {{ nombre_mes | upper }}</span>
+            <h2 class="text-success fw-bold mb-1">${{ "%.2f"|format(total_mes_usd) }}</h2>
+            <span class="text-muted">Bs. {{ "%.2f"|format(total_mes_bs) }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-2 table-responsive">
+        <table class="table table-bordered text-center align-middle mb-0" style="table-layout: fixed; min-width: 650px;">
+            <thead>
+                <tr class="table-light">
+                    <th>Lun</th>
+                    <th>Mar</th>
+                    <th>Mié</th>
+                    <th>Jue</th>
+                    <th>Vie</th>
+                    <th>Sáb</th>
+                    <th>Dom</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for semana in semanas %}
+                <tr>
+                    {% for dia in semana %}
+                    <td style="height: 90px; vertical-align: top; padding: 6px; background-color: {% if dia == 0 %}rgba(0,0,0,0.03){% elif dia_seleccionado and dia == dia_seleccionado|int %}rgba(217, 70, 239, 0.15){% else %}transparent{% endif %};">
+                        {% if dia != 0 %}
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge {% if datos_dias.get(dia) %}bg-dark text-white{% else %}text-muted{% endif %}">{{ dia }}</span>
+                            {% if datos_dias.get(dia) %}
+                            <a href="/calendario?year={{ year }}&month={{ month }}&dia={{ dia }}" class="btn btn-sm btn-outline-primary py-0 px-1" style="font-size: 0.7rem;" title="Ver ventas">Ver</a>
+                            {% endif %}
+                        </div>
+                        
+                        {% if datos_dias.get(dia) %}
+                        <div class="text-success fw-bold" style="font-size: 0.85rem;">
+                            +${{ "%.2f"|format(datos_dias[dia]['total_usd']) }}
+                        </div>
+                        <div class="text-muted" style="font-size: 0.7rem;">
+                            {{ datos_dias[dia]['total_transacciones'] }} venta(s)
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if dia_seleccionado %}
+<div class="card shadow-sm border-primary">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Detalle de Ventas del {{ dia_seleccionado }} de {{ nombre_mes }} {{ year }}</span>
+        <a href="/calendario?year={{ year }}&month={{ month }}" class="btn btn-sm btn-light py-0">Cerrar Detalle</a>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Detalle</th>
+                    <th>Tipo</th>
+                    <th>Monto USD</th>
+                    <th>Monto Bs</th>
+                    <th>Método</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in detalle_dia %}
+                <tr>
+                    <td>{{ d.fecha.split(' ')[1].split('.')[0] if ' ' in d.fecha else d.fecha }}</td>
+                    <td><strong>{{ d.detalle }}</strong></td>
+                    <td><span class="badge bg-secondary">{{ d.tipo }}</span></td>
+                    <td class="text-success fw-bold">${{ "%.2f"|format(d.monto_usd) }}</td>
+                    <td>Bs. {{ "%.2f"|format(d.monto_bs) }}</td>
+                    <td><span class="badge bg-info text-dark">{{ d.metodo_pago }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-3 text-muted">No hay registros detallados para esta fecha.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

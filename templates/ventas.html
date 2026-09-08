@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-3 shadow-sm mb-4 border-start border-4 border-info">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <span class="text-muted small fw-bold">TOTAL FACTURADO ESTE MES</span>
+            <h3 class="text-info fw-bold m-0">${{ "%.2f"|format(ventas_mes_usd) }}</h3>
+        </div>
+        <div class="text-end">
+            <span class="text-muted small">Equivalente en Bolívares</span>
+            <h5 class="fw-bold text-muted m-0">Bs. {{ "%.2f"|format(ventas_mes_bs) }}</h5>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4 col-12">
+        <div class="card p-3 shadow-sm">
+            <h5 class="fw-bold mb-3">🍰 Registrar Venta Directa</h5>
+            <form action="/ventas" method="POST">
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Producto / Detalle *</label>
+                    <input type="text" name="detalle" list="lista-tortas" class="form-control" placeholder="Ej: Porción Selva Negra" required>
+                    <datalist id="lista-tortas">
+                        {% for prod in productos %}
+                        <option value="{{ prod.nombre }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Monto ($) *</label>
+                    <input type="number" step="0.01" name="monto_usd" class="form-control fw-bold" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Método de Pago</label>
+                    <select name="metodo_pago" class="form-select">
+                        <option value="Pago Móvil">Pago Móvil</option>
+                        <option value="Efectivo USD">Efectivo USD</option>
+                        <option value="Efectivo Bs">Efectivo Bs</option>
+                        <option value="Punto de Venta">Punto de Venta</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-bold">Cobrar Venta</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8 col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-transparent fw-bold">Últimas Ventas Realizadas</div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo / Detalle</th>
+                            <th>Monto</th>
+                            <th>Pago</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in ventas %}
+                        <tr>
+                            <td class="small">{{ v.fecha.split('.')[0] }}</td>
+                            <td>
+                                <strong>{{ v.detalle }}</strong><br>
+                                <span class="badge bg-secondary">{{ v.tipo }}</span>
+                            </td>
+                            <td>
+                                <strong>${{ "%.2f"|format(v.monto_usd) }}</strong><br>
+                                <small class="text-muted">Bs. {{ "%.2f"|format(v.monto_bs) }}</small>
+                            </td>
+                            <td><span class="badge bg-info text-dark">{{ v.metodo_pago }}</span></td>
+                            <td>
+                                <a href="/recibo/venta/{{ v.id }}" class="btn btn-sm btn-outline-dark" title="Ver Recibo">🧾</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No hay registros de ventas.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
