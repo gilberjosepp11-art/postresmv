@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-3 shadow-sm mb-4 border-start border-4 border-danger">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <span class="text-muted small fw-bold">TOTAL GASTOS DE ESTE MES</span>
+            <h3 class="text-danger fw-bold m-0">${{ "%.2f"|format(total_egresos_usd) }}</h3>
+        </div>
+        <div class="text-end">
+            <span class="text-muted small">Equivalente en Bolívares</span>
+            <h5 class="fw-bold text-muted m-0">Bs. {{ "%.2f"|format(total_egresos_bs) }}</h5>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4 col-12">
+        <div class="card p-3 shadow-sm">
+            <h5 class="fw-bold mb-3">💸 Registrar Gasto</h5>
+            <form action="/egresos" method="POST">
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Concepto / Detalle *</label>
+                    <input type="text" name="concepto" class="form-control" placeholder="Ej: Bases de tortas y cajas" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Categoría</label>
+                    <select name="categoria" class="form-select">
+                        <option value="Materia Prima">Materia Prima (Harina, Azúcar, etc.)</option>
+                        <option value="Empaques y Bases">Empaques y Bases</option>
+                        <option value="Servicios / Gas">Servicios / Gas</option>
+                        <option value="Transporte">Transporte / Delivery</option>
+                        <option value="Otros">Otros Gastos</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Monto ($) *</label>
+                    <input type="number" step="0.01" name="monto_usd" class="form-control fw-bold" required>
+                </div>
+                <button type="submit" class="btn btn-danger w-100 fw-bold">Registrar Gasto</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8 col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-transparent fw-bold">Historial de Egresos</div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Concepto</th>
+                            <th>Categoría</th>
+                            <th>Monto</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in egresos %}
+                        <tr>
+                            <td class="small">{{ e.fecha.split('.')[0] }}</td>
+                            <td><strong>{{ e.concepto }}</strong></td>
+                            <td><span class="badge bg-secondary">{{ e.categoria }}</span></td>
+                            <td>
+                                <strong class="text-danger">${{ "%.2f"|format(e.monto_usd) }}</strong><br>
+                                <small class="text-muted">Bs. {{ "%.2f"|format(e.monto_bs) }}</small>
+                            </td>
+                            <td>
+                                <form action="/egresos/eliminar/{{ e.id }}" method="POST" onsubmit="return confirm('¿Eliminar este gasto?');">
+                                    <button class="btn btn-sm btn-outline-danger">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No hay gastos registrados en el historial.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

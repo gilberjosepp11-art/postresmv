@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold m-0">🎂 Panel General</h3>
+    <span class="badge bg-secondary p-2">Tasa Activa: Bs. {{ "%.2f"|format(tasa_dolar) }}</span>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Ventas Hoy -->
+    <div class="col-md-3 col-6">
+        <div class="card p-3 shadow-sm border-start border-4 border-success h-100">
+            <span class="text-muted small fw-bold">VENTAS HOY</span>
+            <h3 class="text-success fw-bold mb-1">${{ "%.2f"|format(ventas_hoy_usd) }}</h3>
+            <span class="text-muted small">Bs. {{ "%.2f"|format(ventas_hoy_bs) }}</span>
+        </div>
+    </div>
+
+    <!-- Ventas Mes (Bolívares reales sumados día a día) -->
+    <div class="col-md-3 col-6">
+        <div class="card p-3 shadow-sm border-start border-4 border-info h-100">
+            <span class="text-muted small fw-bold">VENTAS MES</span>
+            <h3 class="text-info fw-bold mb-1">${{ "%.2f"|format(ventas_mes_usd) }}</h3>
+            <span class="text-muted small">Bs. {{ "%.2f"|format(ventas_mes_bs) }}</span>
+        </div>
+    </div>
+
+    <!-- Gastos Mes (Bolívares reales gastados día a día) -->
+    <div class="col-md-3 col-6">
+        <div class="card p-3 shadow-sm border-start border-4 border-danger h-100">
+            <span class="text-muted small fw-bold">GASTOS MES</span>
+            <h3 class="text-danger fw-bold mb-1">${{ "%.2f"|format(egresos_mes_usd) }}</h3>
+            <span class="text-muted small">Bs. {{ "%.2f"|format(egresos_mes_bs) }}</span>
+        </div>
+    </div>
+
+    <!-- Ganancia Neta Mes (Ventas Bs reales - Gastos Bs reales) -->
+    <div class="col-md-3 col-6">
+        <div class="card p-3 shadow-sm border-start border-4 border-primary h-100">
+            <span class="text-muted small fw-bold">GANANCIA NETA</span>
+            <h3 class="{% if ganancia_neta_usd >= 0 %}text-primary{% else %}text-danger{% endif %} fw-bold mb-1">
+                ${{ "%.2f"|format(ganancia_neta_usd) }}
+            </h3>
+            <span class="text-muted small">Bs. {{ "%.2f"|format(ganancia_neta_bs) }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- SALDO PENDIENTE POR COBRAR (Este sí usa la tasa de hoy porque aún no se ha cobrado) -->
+<div class="card p-3 shadow-sm mb-4 border-start border-4 border-warning">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <span class="text-muted small fw-bold">POR COBRAR EN ENCARGOS PENDIENTES</span>
+            <h4 class="text-warning fw-bold m-0">${{ "%.2f"|format(por_cobrar) }}</h4>
+        </div>
+        <div class="text-end">
+            <span class="text-muted small">A tasa de hoy (Bs. {{ "%.2f"|format(tasa_dolar) }})</span>
+            <h5 class="fw-bold text-muted m-0">Bs. {{ "%.2f"|format(por_cobrar * tasa_dolar) }}</h5>
+        </div>
+    </div>
+</div>
+
+<!-- PRÓXIMOS ENCARGOS PENDIENTES -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-transparent fw-bold d-flex justify-content-between align-items-center">
+        <span>⏰ Próximos Encargos Pendientes</span>
+        <a href="/agenda" class="btn btn-sm btn-outline-primary">+ Nuevo Encargo</a>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Fecha Entrega</th>
+                    <th>Cliente</th>
+                    <th>Detalle Pedido</th>
+                    <th>Resta</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pedidos %}
+                <tr>
+                    <td>
+                        <strong>{{ p.fecha_entrega }}</strong> 
+                        {% if p.hora_entrega %}<br><small class="text-muted">{{ p.hora_entrega }}</small>{% endif %}
+                    </td>
+                    <td>
+                        {{ p.cliente_nombre }}
+                        {% if p.cliente_telefono %}<br><small class="text-muted">{{ p.cliente_telefono }}</small>{% endif %}
+                    </td>
+                    <td>{{ p.descripcion_pedido }}</td>
+                    <td class="text-danger fw-bold">${{ "%.2f"|format(p.saldo_pendiente_usd) }}</td>
+                    <td><span class="badge bg-warning text-dark">{{ p.estado }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No hay pedidos pendientes programados en agenda.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
